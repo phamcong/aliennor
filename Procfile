@@ -1,1 +1,1 @@
-web: gunicorn aliennorDjangoBackend.wsgi --log-file -
+web: python aliennorDjangoBackend/manage.py runserver 0.0.0.0:$PORT --noreload
