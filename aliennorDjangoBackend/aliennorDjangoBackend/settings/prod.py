@@ -10,6 +10,14 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # Allow all host hosts/domain names for this site
 ALLOWED_HOSTS = ['*']
 
+# we only need the engine name, as heroku takes care of the rest
+DATABASES = {
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+    }
+}
+
+
 # Parse database configuration from $DATABASE_URL
 import dj_database_url
 
@@ -23,10 +31,3 @@ try:
   from local_settings import *
 except Exception as e:
   pass
-
-# we only need the engine name, as heroku takes care of the rest
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-    }
-}
