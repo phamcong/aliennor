@@ -1,0 +1,19 @@
+{% load crispy_forms_tags %}
+
+{% block content %}
+<div class="container">
+<form action="{% url 'ecocases:upload_json' %}" method="POST" enctype="multipart/form-data" class="form-horizontal"> 
+    {% csrf_token %}
+    <div class="form-group">
+        <label for="name" class="col-md-2 col-sm-2 col-xs-12 control-label">File: </label>
+        <div class="col-md-6">
+            <input type="file" name="json_file" id="json_file" required="True" class="form-control">
+        </div> 
+        <div class="col-md-2">
+            <button class="btn btn-success btn-sm"> <span class="glyphicon glyphicon-upload" style="margin-right:5px;"></span>Upload </button>
+        </div>                    
+    </div>
+</form>
+</div>
+
+{% endblock %}

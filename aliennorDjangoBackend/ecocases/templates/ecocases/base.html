@@ -1,0 +1,43 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>ALIENNOR</title>
+    <!-- <link rel="stylesheet" href="{% static 'bootstrap/bootstrap.css' %}"> -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootswatch/3.3.7/superhero/bootstrap.min.css" rel="stylesheet" integrity="sha384-Xqcy5ttufkC3rBa8EdiAyA1VgOGrmel2Y+wxm4K3kI3fcjTWlDWrlnxyD6hOi3PF" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'ecocases/css/ecocases.css' %}">
+    <script src="{% static "js/jquery-3.2.1.js" %}"></script>
+    <script src="https://npmcdn.com/tether@1.2.4/dist/js/tether.min.js"></script>
+    <script src="{% static 'bootstrap/bootstrap.min.js' %}"></script>
+    <script src="{% static 'js/tinymce/tinymce.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'js/tinymce/custom.js' %}" ></script>
+</head>
+
+<body> 
+    <nav class="navbar navbar-inverse">
+        <div class="container-fluid">
+            <div class="navbar-header">
+                <a class="navbar-brand" href="{% url 'admin:index' %}">
+                    <div>
+                        <img id="logo" src="{% static 'aliennor-logo.png' %}">
+                        <span>ALIENNOR Platform</span>
+                    </div>
+                </a>
+            </div>
+            <ul class="nav navbar-nav">
+                <li><a href="{% url 'ecocases:hompage' %}">Hompage</a></li>
+                <li><a href="{% url 'ecocases:index' %}">Ecocases</a></li>
+                <li><a href="{% url 'ecocases:esms' %}">Mechanisms</a></li>
+            </ul>
+        </div>
+    </nav>
+    <main class="container">
+        {% block content %}
+        {% endblock %}
+    </main>
+    {% block script %}{% endblock script %}
+</body>
+</html>
