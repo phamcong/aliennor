@@ -10,23 +10,23 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # Allow all host hosts/domain names for this site
 ALLOWED_HOSTS = ['*']
 
-# we only need the engine name, as heroku takes care of the rest
-# DATABASES = {
-#     "default": {
-#         "ENGINE": "django.db.backends.postgresql_psycopg2",
-#     }
-# }
-
+we only need the engine name, as heroku takes care of the rest
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': get_env_variable('DATABASE_NAME'),
-        'USER': get_env_variable('DATABASE_USER'),
-        'PASSWORD': get_env_variable('DATABASE_PASSWORD'),
-        'HOST': '',
-        'PORT': '',
+    "default": {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
     }
 }
+
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql_psycopg2',
+#         'NAME': get_env_variable('DATABASE_NAME'),
+#         'USER': get_env_variable('DATABASE_USER'),
+#         'PASSWORD': get_env_variable('DATABASE_PASSWORD'),
+#         'HOST': '',
+#         'PORT': '',
+#     }
+# }
 
 if not DEBUG:
   AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
