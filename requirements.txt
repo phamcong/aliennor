@@ -9,6 +9,11 @@ django-crispy-forms==1.6.1
 django-storages==1.6.5
 django-tinymce==2.6.0
 djangorestframework==3.7.3
+dj_database_url==0.5.0
+dj-static==0.0.6
+django-toolbelt==0.0.1
+gunicorn==19.7.1
+static3==0.7.0
 docutils==0.14
 idna==2.6
 jmespath==0.9.3
