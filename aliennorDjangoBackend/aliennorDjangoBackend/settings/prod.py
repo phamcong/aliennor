@@ -23,7 +23,8 @@ if not DEBUG:
   AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
   AWS_S3_CUSTOM_DOMAIN = '%s.s3.amazonaws.com' % AWS_STORAGE_BUCKET_NAME
   STATICFILES_STORAGE = 'storages.backends.s3boto.S3BotoStorage'
-  S3_UR = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
+  AWS_LOCATION = 'static'
+  S3_URL = "https://%s/%s/" % (AWS_S3_CUSTOM_DOMAIN, AWS_LOCATION)
   STATIC_URL = S3_URL
   AWS_LOCATION = 'static'
 
