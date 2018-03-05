@@ -662,8 +662,6 @@ class EcocaseViewSet(viewsets.ModelViewSet):
 class EcocaseCommentViewSet(viewsets.ModelViewSet):
     serializer_class = EcocaseCommentSerializer
     queryset = EcocaseComment.objects.all()
-    print('ecocase comments:', queryset)
-
 
 def submit_esmevaluations(request, ecocase_id, username):
     print("at ecocase views: submit esmevaluations")
