@@ -75,6 +75,7 @@ def login(request, redirect_after_registration=False, registration_data=None):
         token = create_login_token(registration_data)
     else:
         # check credentials
+        print('request: ', request)
         post_data = json.loads(request.body)
         username = post_data['username']
         password = post_data['password']

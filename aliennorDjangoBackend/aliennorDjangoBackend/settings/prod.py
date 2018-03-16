@@ -10,6 +10,7 @@ SECRET_KEY = os.environ['SECRET_KEY']
 # Allow all host hosts/domain names for this site
 ALLOWED_HOSTS = ['*']
 
+
 # DATABASES = {
 #     'default': {
 #         'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -41,6 +42,10 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql_psycopg2",
     }
 }
+
+CORS_ORIGIN_WHITELIST = (
+    'https://aliennor-plf.herokuapp.com'
+)
 
 import dj_database_url
 
