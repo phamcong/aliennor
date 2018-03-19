@@ -19,8 +19,9 @@ ecocases_routes = [
     url(r'^ecocase/(?P<ecocase_id>[0-9]+)/esms/summary/$', views.get_associated_esms, name='get associated esms summary'),
     url(r'^ecocase/tagged/(?P<ecocase_id>[0-9]+)/esms-weights/$', views.get_esms_weights_tagged_ecocase, name='get esms weight of tagged ecocase'),
     url(r'^filters$', views.get_filter_criteria, name='get filter criteria'),
+    url(r'^(?P<username>[\w.@+-]+)/tagged/search/$', views.get_tagged_ecocases_by_user, name='filter ecocases'),
+    url(r'^(?P<username>[\w.@+-]+)/untagged/search/$', views.get_untagged_ecocases_by_user, name='get untagged ecocases'),
     url(r'^search/$', views.get_ecocases, name='filter ecocases'),
-    url(r'^untagged/search/$', views.get_untagged_ecocases, name='get untagged ecocases'),
 ]
 
 ecocase_rate_routes = [

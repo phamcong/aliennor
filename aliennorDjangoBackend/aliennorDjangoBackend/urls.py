@@ -19,7 +19,7 @@ from rest_framework.routers import DefaultRouter
 from ecocases import views
 
 router = DefaultRouter()
-router.register(r'ecocases', views.get_ecocases, base_name='api_ecocase')
+# router.register(r'ecocases', views.get_ecocases, base_name='api_ecocase')
 router.register(r'comments', views.EcocaseCommentViewSet, base_name='api_ecocase_comment')
 
 

@@ -48,15 +48,7 @@ def get_ecocases_by_esm(request, esm_id):
     ecocases_array = []
     for ecocase in ecocases:
         if (ecocase.first_esm == esm) or (ecocase.second_esm == esm):
-            ecocase_dict = model_to_dict(ecocase)
-            ecocase_dict['levels'] = [item['title'] for item in ecocase.levels.values()]
-            ecocase_dict['categories'] = [item['title'] for item in ecocase.categories.values()]
-            if (ecocase_dict['first_esm'] != None):
-                ecocase_dict['first_esm'] = model_to_dict(ecocase.first_esm)
-            if (ecocase_dict['second_esm'] != None):
-                ecocase_dict['second_esm'] = model_to_dict(ecocase.second_esm)   
-            ecocase_dict['is_first_esm'] = True if ecocase.first_esm == esm else False
-            ecocase_dict['image_urls'] = ecocase.image_urls()
+            ecocase_dict = model_to_dict_ecocase(ecocase)
             ecocases_array.append(ecocase_dict)
         # elif (ecocase.first_esm == None) or (ecocase.first_esm == None):
         #     associated_esms_by_evals = ecocase.associated_esms_by_evals()
@@ -106,3 +98,16 @@ def get_esm_by_id(request, esm_id):
             'esm': model_to_dict(esm)
         }
     })
+
+def model_to_dict_ecocase(ecocase):
+    ecocase_dict = model_to_dict(ecocase)
+    ecocase_dict['levels'] = [item['title'] for item in ecocase.levels.values()]
+    ecocase_dict['categories'] = [item['title'] for item in ecocase.categories.values()]
+    ecocase_dict['evaluated_by_users'] = [item['username'] for item in ecocase.evaluated_by_users.values()]
+    if (ecocase.first_esm != None):
+        ecocase_dict['first_esm'] = model_to_dict(ecocase.first_esm)
+    if (ecocase.second_esm != None):
+        ecocase_dict['second_esm'] = model_to_dict(ecocase.second_esm)
+    ecocase_dict['image_urls'] = ecocase.image_urls()
+    
+    return ecocase_dict
