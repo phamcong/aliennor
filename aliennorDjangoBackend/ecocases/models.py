@@ -41,8 +41,7 @@ class Question(models.Model):
     def __str__(self):
         return self.title
     
-class Ecocase(models.Model):    
-    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+class Ecocase(models.Model):
     title = models.CharField(max_length=200)
     promise = tinymce_models.HTMLField(default='')
     description = tinymce_models.HTMLField(default='')
@@ -50,6 +49,7 @@ class Ecocase(models.Model):
     categories = models.ManyToManyField(Category)
     first_esm = models.ForeignKey(ESM, null=True, blank=True, on_delete=models.CASCADE, related_name='first_esm')
     second_esm = models.ForeignKey(ESM, null=True, blank=True, on_delete=models.CASCADE, related_name='second_esm')
+    evaluated_by_users = models.ManyToManyField(User)
 
     def __str__(self):
         return self.title
@@ -180,3 +180,12 @@ class ESMEvaluation(models.Model):
             raise ValidationError({'associated_esms': _("A mechanism could not be both the most and the second most associated mechanims of an ecocase.")})
     def __str__(self):
         return self.ecocase2esm.ecocase.title + ' - ' + self.ecocase2esm.esm.title + ': ' + self.question.title + ' _by_ ' + self.user.username
+
+
+class NonESMEvaluation(models.Model):
+    ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, null=True, blank=True, on_delete=models.CASCADE)
+    argumentation = models.CharField(max_length=100, validators=[MinLengthValidator(1)])
+    
+    def __str__(self):
+        return self.ecocase.title + ' - ' + self.user.username

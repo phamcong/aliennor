@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Ecocase, EcocaseRating, EcocaseComment, ESM, Ecocase2ESM, Category, Level, EcocaseImage, ESMEvaluation, Question
+from .models import Ecocase, EcocaseRating, EcocaseComment, ESM, Ecocase2ESM, Category, Level, EcocaseImage, ESMEvaluation, Question, NonESMEvaluation
 # Register your models here.
 
 class Ecocase2ESMInline(admin.TabularInline):
@@ -34,3 +34,4 @@ admin.site.register(Level)
 admin.site.register(EcocaseImage)
 admin.site.register(ESMEvaluation)
 admin.site.register(Question)
+admin.site.register(NonESMEvaluation)
