@@ -37,17 +37,24 @@ def submit_esmevaluations(request, ecocase_id, username):
         submit_esmevaluations = post_data['esmevaluations']
         nonESM = post_data['nonESM']
 
+        ecocase = Ecocase.objects.get(id=ecocase_id)
+        user = User.objects.get(username=username)
+
         for submit_esmevaluation in submit_esmevaluations:
             esmevaluation = ESMEvaluation.objects.get(id=submit_esmevaluation['id'])
             esmevaluation.answer = submit_esmevaluation['answer']
             esmevaluation.is_first_esm = submit_esmevaluation['isFirstESM']
             esmevaluation.is_second_esm = submit_esmevaluation['isSecondESM']
+            if submit_esmevaluation['isFirstESM'] and username == 'admin':
+                esm = ESM.objects.get(id=submit_esmevaluation['esm']['id'])
+                ecocase.first_esm = esm
+                ecocase.save()
+            if submit_esmevaluation['isSecondESM'] and username == 'admin':
+                esm = ESM.objects.get(id=submit_esmevaluation['esm']['id'])
+                ecocase.second_esm = esm
+                ecocase.save()
             esmevaluation.save()
-        
-        ecocase = Ecocase.objects.get(id=ecocase_id)
-        user = User.objects.get(username=username)
 
-        
         nonESMEvaluations = NonESMEvaluation.objects.filter(
           Q(ecocase=ecocase),
           Q(user=user)
