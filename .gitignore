@@ -1,3 +1,11 @@
 env/*
 aliennorDjangoBackend/media/*
 aliennorDjangoBackend/ecocases/static/ecocases/images/*
+
+*.dump
+aliennorDjangoBackend/aliennorDjangoBackend/__pycache__/*
+aliennorDjangoBackend/aliennorDjangoBackend/settings/__pycache__/*
+aliennorDjangoBackend/ecocases/__pycache__/*
+aliennorDjangoBackend/ecocases/middlewares/__pycache__/*
+aliennorDjangoBackend/ecocases/migrations/__pycache__/*
+aliennorDjangoBackend/ecocases/views/__pycache__/*
