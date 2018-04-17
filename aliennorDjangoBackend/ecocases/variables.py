@@ -9,6 +9,8 @@ ecocase_image_fs = FileSystemStorage(location=os.path.join(
     settings.BASE_DIR, 'media/ecocases'))
 
 aws_s3_ecocase_image_url = 'https://s3.eu-central-1.amazonaws.com/plf-aliennor/media/'
+aws_s3_bucket_key = 'media/ecocases/images/'
+
 # aws_s3_ecocase_image_url = 'http://localhost:8080/plf-aliennor/media/'
 
 

@@ -25,7 +25,21 @@ from django.http import JsonResponse
 from django.forms.models import model_to_dict
 from django.core import serializers
 
+import boto3
+import io
+from boto.s3.connection import S3Connection
+from boto.s3.key import Key
+# import urllib
+# from io import BytesIO
+from django.core.files.base import ContentFile
+import base64
+
 from ecocases.variables import *
+
+AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
+AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
+AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
+REGION_HOST = os.environ['REGION_HOST']
 
 dirspot = os.getcwd()
 
@@ -517,8 +531,10 @@ def get_filtered_ecocases(request):
         }
     })
 
+
 def post_ecocase(request):
-    print("at ecocase views: post ecocase")
+    errors = []
+    print('request method:', request.method)
     if request.method == 'POST':
         post_data = json.loads(request.body)
         title = post_data['title']
@@ -565,6 +581,9 @@ def post_ecocase(request):
 
         try:
             ecocase.delete()
+            return JsonResponse({
+                'status': 'success'
+            })
         except:
             return JsonResponse({
                 'status': 'fail',
@@ -573,9 +592,81 @@ def post_ecocase(request):
                 }
             }, status=500)
 
-        return JsonResponse({
-            'status': 'success'
-        })
+    # UPDATE ecocase
+    elif request.method == 'PUT':
+        update_data = json.loads(request.body)
+        update_ecocase = update_data['ecocase']
+        upload_files = update_data['uploadFiles']
+        removed_urls = update_data['removedUrls']
+        objects_to_delete = [{'Key': aws_s3_bucket_key + url.split('/')[-1]} for url in removed_urls]
+
+        print('objects_to_delete: ', objects_to_delete)
+        print('removedUrls: ', removed_urls)
+
+        # UPLOAD directly image to AWS S3
+        # s3 = boto3.resource('s3')
+        # for file in upload_files:
+        #     try:
+        #         req = s3.Bucket(AWS_STORAGE_BUCKET_NAME).put_object(
+        #             Key='media/ecocases/images/' + file['filename'],
+        #             Body=base64.b64decode(file['value']),
+        #             ContentType='image/png',
+        #             ACL='public-read'
+        #         )
+        #         print('req put object: ', req)
+        #     except Exception as e:
+        #         return errors.append(e)
+
+        # DELETE images in aws s3
+        if len(objects_to_delete) > 0:
+            try:
+                s3 = boto3.resource('s3')
+                bucket = s3.Bucket(AWS_STORAGE_BUCKET_NAME)
+                bucket.delete_objects(
+                    Delete={
+                        'Objects': objects_to_delete
+                    }
+                )
+            except Exception as e:
+                errors.append(str(e))
+
+        try:
+            ecocase = Ecocase.objects.get(id=update_ecocase['id'])
+            ecocase.title = update_ecocase['title']
+            ecocase.promise = update_ecocase['promise']
+            ecocase.description = update_ecocase['description']
+
+            for file in upload_files:
+                new_image = EcocaseImage(prefix='prefix', ecocase=ecocase)
+                new_image.image = ContentFile(base64.b64decode(file['value']), file['filename'])
+                new_image.save()
+
+            for url in removed_urls:
+                try:
+                    image = EcocaseImage.objects.get(image=url[len(aws_s3_ecocase_image_url):])
+                    image.delete()
+                except Exception as e:
+                    errors.append(str(e))
+
+            ecocase.save()
+        except Ecocase.DoesNotExist:
+            errors.append('The ecocase does not exist')
+
+
+        if len(errors) == 0:
+            return JsonResponse({
+                'status': 'success',
+                'data': {
+                    'message': 'The ecocase is updated successfully',
+                    'ecocase': model_to_dict_ecocase(ecocase)
+                }
+            })
+        else:
+            print(errors)
+            return JsonResponse({
+                'status': 'fail',
+                'errors': errors
+            }, status=500)
 
 def get_associated_esms(request, ecocase_id):
     print('------- at get_associated_esms -------');
