@@ -1,18 +1,17 @@
-from django.http import JsonResponse
 from django.db.models import Avg, Count, Func
 from django.shortcuts import render
 from django.views.generic.edit import FormView
 from rest_framework import viewsets
 
 from django.urls import reverse_lazy
-from django.http import HttpResponse, HttpResponseRedirect, Http404
+from django.http import HttpResponseRedirect
 from django.urls import reverse
 
 from ..forms import EcocaseForm
 from ..models import *
 from django.contrib.auth.models import User
-from ..serializers import UserSerializer, EcocaseSerializer, EcocaseCommentSerializer
-from ..mixins import FormUserNeededMixin, UserOwnerMixin
+from ..serializers import EcocaseSerializer, EcocaseCommentSerializer
+from ..mixins import FormUserNeededMixin
 from django.db.models import Q
 
 import json
@@ -23,14 +22,9 @@ from django.utils.timezone import now
 
 from django.http import JsonResponse
 from django.forms.models import model_to_dict
-from django.core import serializers
 
 import boto3
-import io
-from boto.s3.connection import S3Connection
-from boto.s3.key import Key
-# import urllib
-# from io import BytesIO
+
 from django.core.files.base import ContentFile
 import base64
 
