@@ -189,3 +189,50 @@ class NonESMEvaluation(models.Model):
     
     def __str__(self):
         return self.ecocase.title + ' - ' + self.user.username
+
+class EnvironmentalGain(models.Model):
+    level = models.CharField(max_length=50, null=False, blank=False)
+    label = models.CharField(max_length=50, null=False, blank=False)
+
+    def save(self, *args, **kwargs):
+        if self.label == '':
+            self.label = self.level
+            super(EnvironmentalGain, self).save(*args, **kwargs)
+        else:
+            super(EnvironmentalGain, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.level
+
+class EnvironGainEval(models.Model):
+    ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    environ_gain_level = models.ForeignKey(EnvironmentalGain, on_delete=models.CASCADE, null=False)
+    comment = tinymce_models.HTMLField(default='', null=True)
+
+    def __str__(self):
+        return self.ecocase.title + ' - ' + self.user.username + ' - ' + self.environ_gain_level.level
+
+class EcoEffectPotential(models.Model):
+    title = models.CharField(max_length=50, null=False, blank=False)
+    selected = models.BooleanField(default=False, null=False)
+    label = models.CharField(max_length=50, null=False, blank=False)
+
+    def save(self, *args, **kwargs):
+        if self.label == '':
+            self.label = self.title
+            super(EcoEffectPotential, self).save(*args, **kwargs)
+        else:
+            super(EnvironmentalGain, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title + ' - ' + self.selected
+
+class EcoEffectPotentialEval(models.Model):
+    ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    eco_effect_potential = models.ManyToManyField(EcoEffectPotential)
+    comment = tinymce_models.HTMLField(default='', null=True)
+
+    def __str__(self):
+        return self.ecocase.title + ' - ' + self.user.username + ' - '
