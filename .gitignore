@@ -9,3 +9,5 @@ aliennorDjangoBackend/ecocases/__pycache__/*
 aliennorDjangoBackend/ecocases/middlewares/__pycache__/*
 aliennorDjangoBackend/ecocases/migrations/__pycache__/*
 aliennorDjangoBackend/ecocases/views/__pycache__/*
+
+aliennorDjangoBackend/ecocases/migrations/*

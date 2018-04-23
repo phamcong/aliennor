@@ -10,6 +10,7 @@ from ecocases.variables import *
 from operator import itemgetter
 from django.db.models import Q
 
+
 # Create your models here.
 class Category(models.Model):
     title = models.CharField(max_length=50, default='')
@@ -17,11 +18,13 @@ class Category(models.Model):
     def __str__(self):
         return self.title
 
+
 class Level(models.Model):
     title = models.CharField(max_length=50, default='')
 
     def __str__(self):
         return self.title
+
 
 class ESM(models.Model):    
     label = models.CharField(max_length=50, default='')
@@ -33,14 +36,16 @@ class ESM(models.Model):
 
     def __str__(self):
         return self.label
-   
+
+
 class Question(models.Model):
     title = models.CharField(max_length=500)
     esm = models.ForeignKey(ESM, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
         return self.title
-    
+
+
 class Ecocase(models.Model):
     title = models.CharField(max_length=200)
     promise = tinymce_models.HTMLField(default='')
@@ -104,6 +109,8 @@ class Ecocase(models.Model):
                 'first_esm': '' if sorted_by_first_esm[0]['first_esm_count'] == 0 else sorted_by_first_esm[0]['esm'],
                 'second_esm': '' if sorted_by_second_esm[1]['first_esm_count'] == 0 else sorted_by_second_esm[1]['esm']
             }
+
+
 class EcocaseImage(models.Model):
     prefix = models.CharField(max_length=200, default='')
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=True)
@@ -112,6 +119,7 @@ class EcocaseImage(models.Model):
 
     def __str__(self):
         return "../media/" + str(self.image)
+
 
 class EcocaseComment(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE)    
@@ -125,6 +133,7 @@ class EcocaseComment(models.Model):
     def save(self, *args, **kwargs):
         self.full_clean()
         super(EcocaseComment, self).save(*args, **kwargs)
+
 
 class EcocaseRating(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE)
@@ -148,6 +157,30 @@ class EcocaseRating(models.Model):
     # def vote_point_options(self):
     #     return vote_point_options
 
+
+class EcoInnovationStatus(models.Model):
+    title = models.CharField(max_length=200, null=False, blank=False)
+    label = models.CharField(max_length=150, null=False, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.label == '':
+            self.label = self.title
+            super(EcoInnovationStatus, self).save(*args, **kwargs)
+        else:
+            super(EcoInnovationStatus, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+class EcocaseEval(models.Model):
+    ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE)
+    eco_innovation_status = models.ForeignKey(EcoInnovationStatus, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.ecocase.title + ' - ' + self.eco_innovation_status.title
+
+
 class Ecocase2ESM(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE)
     esm = models.ForeignKey(ESM, on_delete=models.CASCADE)
@@ -155,6 +188,7 @@ class Ecocase2ESM(models.Model):
 
     def __str__(self):
         return self.ecocase.title + ' - ' + self.esm.title
+
 
 class ESMEvaluation(models.Model):
     ecocase2esm = models.ForeignKey(Ecocase2ESM, on_delete=models.CASCADE)
@@ -176,8 +210,9 @@ class ESMEvaluation(models.Model):
             #     'title': ValidationError(_('Missing title.'), code='required'),
             #     'pub_date': ValidationError(_('Invalid date.'), code='invalid'),
             # })
-        if (self.is_first_esm and self.is_second_esm):
+        if self.is_first_esm and self.is_second_esm:
             raise ValidationError({'associated_esms': _("A mechanism could not be both the most and the second most associated mechanims of an ecocase.")})
+
     def __str__(self):
         return self.ecocase2esm.ecocase.title + ' - ' + self.ecocase2esm.esm.title + ': ' + self.question.title + ' _by_ ' + self.user.username
 
@@ -189,6 +224,7 @@ class NonESMEvaluation(models.Model):
     
     def __str__(self):
         return self.ecocase.title + ' - ' + self.user.username
+
 
 class EnvironmentalGain(models.Model):
     level = models.CharField(max_length=50, null=False, blank=False)
@@ -204,6 +240,7 @@ class EnvironmentalGain(models.Model):
     def __str__(self):
         return self.level
 
+
 class EnvironGainEval(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
@@ -212,6 +249,7 @@ class EnvironGainEval(models.Model):
 
     def __str__(self):
         return self.ecocase.title + ' - ' + self.user.username + ' - ' + self.environ_gain_level.level
+
 
 class EcoEffectPotential(models.Model):
     title = models.CharField(max_length=50, null=False, blank=False)
@@ -223,10 +261,11 @@ class EcoEffectPotential(models.Model):
             self.label = self.title
             super(EcoEffectPotential, self).save(*args, **kwargs)
         else:
-            super(EnvironmentalGain, self).save(*args, **kwargs)
+            super(EcoEffectPotential, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.title + ' - ' + self.selected
+        return self.title + ' - ' + str(self.selected)
+
 
 class EcoEffectPotentialEval(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
