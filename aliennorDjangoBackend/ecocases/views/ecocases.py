@@ -93,6 +93,7 @@ class EcocaseCreateView(FormUserNeededMixin, FormView):
         else:
             return self.form_invalid(form)
 
+
 def get_tagged_ecocases(request):
     print("at ecocases view: get tagged ecocases");
     if request.method != 'GET':
@@ -167,6 +168,7 @@ def get_tagged_ecocases(request):
             'ecocases': ecocases_set_to_array(found_ecocases)
         }
     })
+
 
 def get_tagged_ecocases_by_user(request, username):
     print("at ecocases view: get tagged ecocases");
@@ -243,6 +245,7 @@ def get_tagged_ecocases_by_user(request, username):
         }
     })
 
+
 def get_all_ecocases(request):
     ecocases = Ecocase.objects.all()
     return JsonResponse({
@@ -251,6 +254,7 @@ def get_all_ecocases(request):
             'ecocases': ecocases_set_to_array(ecocases)
         }
     })
+
 
 def get_ecocases(request):
     print("at ecocases view: get ecocases");
@@ -327,7 +331,8 @@ def get_ecocases(request):
             'ecocases': ecocases_set_to_array(found_ecocases)
         }
     })
-  
+
+
 def get_untagged_ecocases(request):
     print("at ecocases view: get untagged ecocases");
     if request.method != 'GET':
@@ -375,6 +380,7 @@ def get_untagged_ecocases(request):
         }
     })
 
+
 def get_untagged_ecocases_by_user(request, username):
     print("at ecocases view: get untagged ecocases");
     if request.method != 'GET':
@@ -420,6 +426,7 @@ def get_untagged_ecocases_by_user(request, username):
         }
     })
 
+
 def get_esms_weights_tagged_ecocase(request, ecocase_id):
     ecocase = Ecocase.objects.get(id=ecocase_id)
     esms = ESM.objects.all()
@@ -440,6 +447,7 @@ def get_esms_weights_tagged_ecocase(request, ecocase_id):
         }
     })
 
+
 def ecocases_set_to_array(ecocases):
     ecocases_array = []
     for ecocase in ecocases:
@@ -447,6 +455,7 @@ def ecocases_set_to_array(ecocases):
         ecocases_array.append(ecocase_dict)
     return ecocases_array
     # print('ecocases: ', ecocases[next(iter(ecocases))])
+
 
 # check if an ecocase is associated with one of esm in seletec_esms
 def is_associated(ecocase, selected_esms):
@@ -460,6 +469,7 @@ def is_associated(ecocase, selected_esms):
     
     print('is_associated: ', is_associated)
     return is_associated
+
 
 def get_filtered_ecocases(request):
     print("at ecocases view: get ecocases");
@@ -662,6 +672,7 @@ def post_ecocase(request):
                 'errors': errors
             }, status=500)
 
+
 def get_associated_esms(request, ecocase_id):
     print('------- at get_associated_esms -------');
     errors = []
@@ -688,7 +699,6 @@ def get_associated_esms(request, ecocase_id):
             'second_esm_count': 0
         }
     
-    
     for esmevaluation in esmevaluations:
         if (esmevaluation.is_first_esm):
             associated_esms_summary[esmevaluation.ecocase2esm.esm.title]['first_esm_count'] += 1
@@ -702,6 +712,7 @@ def get_associated_esms(request, ecocase_id):
             'errors': errors
         }
     })
+
 
 def ecocase_details(request, ecocase_id):
     print('at ecocase detail')
@@ -743,13 +754,26 @@ def ecocase_details(request, ecocase_id):
     # ecocase = serializers.serialize('json', [ecocase, ])
     # ecocase = json.loads(ecocase)
 
-    # get esms by user
     esmevaluations_list = []
+
+    environ_gains = EnvironmentalGain.objects.all()
+    eco_effect_potentials = EcoEffectPotential.objects.all()
+    ecoinnovation_statuss = EcoInnovationStatus.objects.all()
+    environ_gains_list = [model_to_dict(item) for item in  environ_gains]
+    eco_effect_potential_list = [model_to_dict(item) for item in  eco_effect_potentials]
+    ecoinnovation_status_list = [model_to_dict(item) for item in ecoinnovation_statuss]
+    environ_gain_eval_dict = {}
+    eco_effect_potential_eval_dict = {}
+    ecoinnovation_status_eval_dict = {}
+
     username = request.GET.get('username')
-    questions = Question.objects.all()
     print('usernameeeeeeee: ', username)
     try:
         user = User.objects.get(username=username)
+
+        # --------------------
+        # GET esmevaluations
+        # --------------------
         esmevaluations = ESMEvaluation.objects.filter(
                 Q(ecocase2esm__ecocase__exact=ecocase),
                 Q(user__username__exact=username)
@@ -758,7 +782,7 @@ def ecocase_details(request, ecocase_id):
             # user view this ecocase for the first time
             # create all possible esmevaluations (for each esm and for each question)
             esms = ESM.objects.all()
-            question = Question.objects.all()
+            questions = Question.objects.all()
             user = User.objects.get(username=username)
             for esm in esms:
                 ecocase2esms = Ecocase2ESM.objects.filter(
@@ -785,20 +809,17 @@ def ecocase_details(request, ecocase_id):
                 Q(ecocase2esm__ecocase__exact=ecocase),
                 Q(user__username__exact=username)
             )
-        else:
-            for esmevaluation in esmevaluations:
-                esmevaluation_dict = {}
-                esmevaluation_dict['id'] = esmevaluation.id
-                esmevaluation_dict['question'] = model_to_dict(esmevaluation.question)
-                esmevaluation_dict['esm'] = model_to_dict(esmevaluation.ecocase2esm.esm)
-                esmevaluation_dict['answer'] = esmevaluation.answer
-                esmevaluation_dict['is_first_esm'] = esmevaluation.is_first_esm
-                esmevaluation_dict['is_second_esm'] = esmevaluation.is_second_esm
-                esmevaluations_list.append(esmevaluation_dict)
 
-            print('Found esmevaluations: ', esmevaluations_list)
-            # esmevaluations corresponding to this user exist.
-            # return existing esmevaluations
+        # return esmevaluations
+        for esmevaluation in esmevaluations:
+            esmevaluation_dict = {}
+            esmevaluation_dict['id'] = esmevaluation.id
+            esmevaluation_dict['question'] = model_to_dict(esmevaluation.question)
+            esmevaluation_dict['esm'] = model_to_dict(esmevaluation.ecocase2esm.esm)
+            esmevaluation_dict['answer'] = esmevaluation.answer
+            esmevaluation_dict['is_first_esm'] = esmevaluation.is_first_esm
+            esmevaluation_dict['is_second_esm'] = esmevaluation.is_second_esm
+            esmevaluations_list.append(esmevaluation_dict)
 
         # check if nonESM is exist
         nonESMDict = {'isNonESM': False, 'argumentation': ''}
@@ -809,12 +830,46 @@ def ecocase_details(request, ecocase_id):
         if len(nonESMEvaluation) != 0:
             nonESMDict['isNonESM'] = True
             nonESMDict['argumentation'] = nonESMEvaluation[0].argumentation
-                
+
+        # --------------------
+        # GET "Environmental Gains" and "Eco Effect Potential"
+        # --------------------
+        environ_gain_evals = EnvironGainEval.objects.filter(
+            Q(ecocase=ecocase),
+            Q(user__username=username)
+        )
+        eco_effect_potential_evals = EcoEffectPotentialEval.objects.filter(
+            Q(ecocase=ecocase),
+            Q(user__username=username)
+        )
+
+        if len(environ_gain_evals) != 0 and len(eco_effect_potential_evals) != 0:
+            # user view this ecocase for the first time
+            environ_gain_eval = environ_gain_evals[0]
+            environ_gain_eval_dict = model_to_dict(environ_gain_eval)
+
+            eco_effect_potential_eval = eco_effect_potential_evals[0]
+            eco_effect_potential_eval_dict = model_to_dict(eco_effect_potential_eval)
+            eco_effect_potential_eval_dict[
+                'eco_effect_potentials'] = eco_effect_potential_eval.eco_effect_potentials.values()
+
+        # --------------------
+        # GET "Ecoinnovation Status" and "Ecocase Evaluation"
+        # --------------------
+        ecoinnovation_status_evals = EcoEffectPotentialEval.objects.filter(
+            Q(ecocase=ecocase),
+            Q(user__username=username)
+        )
+
+        if len(ecoinnovation_status_evals) != 0:
+            ecoinnovation_status_eval = ecoinnovation_status_evals[0]
+            ecoinnovation_status_eval_dict = model_to_dict(ecoinnovation_status_eval)
+
     except User.DoesNotExist:
         errors.append('Not authenticated user. Please logged in to tag ecocase.')
 
-
-    print('ecocase json: ', ecocase_dict);
+    print('ecocase json: ', ecocase_dict)
+    print('errors: ', errors)
     return JsonResponse({
         'status': 'success',
         'data': {
@@ -826,6 +881,12 @@ def ecocase_details(request, ecocase_id):
             # 'ecocase': ecocase[0].get('fields'),
             'ecocase': ecocase_dict,
             'nonESM': nonESMDict,
+            'environ_gains': environ_gains_list,
+            'environ_gain_eval': environ_gain_eval_dict,
+            'eco_effect_potentials': eco_effect_potential_list,
+            'eco_effect_potential_eval': eco_effect_potential_eval_dict,
+            'ecoinnovation_statuss': ecoinnovation_status_list,
+            'ecoinnovation_status_eval': ecoinnovation_status_eval_dict,
             'comments': list(cmt),
             'errors': errors
         }

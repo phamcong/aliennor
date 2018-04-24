@@ -173,8 +173,9 @@ class EcoInnovationStatus(models.Model):
         return self.title
 
 
-class EcocaseEval(models.Model):
+class EcoinnovationStatusEval(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     eco_innovation_status = models.ForeignKey(EcoInnovationStatus, on_delete=models.CASCADE)
 
     def __str__(self):
@@ -270,7 +271,7 @@ class EcoEffectPotential(models.Model):
 class EcoEffectPotentialEval(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
-    eco_effect_potential = models.ManyToManyField(EcoEffectPotential)
+    eco_effect_potentials = models.ManyToManyField(EcoEffectPotential)
     comment = tinymce_models.HTMLField(default='', null=True)
 
     def __str__(self):

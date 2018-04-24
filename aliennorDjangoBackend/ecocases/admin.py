@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import Ecocase, EcocaseRating, EcocaseComment, ESM, Ecocase2ESM, \
   Category, Level, EcocaseImage, ESMEvaluation, Question, NonESMEvaluation, \
   EnvironmentalGain, EnvironGainEval, EcoEffectPotential, EcoEffectPotentialEval, \
-  EcoInnovationStatus, EcocaseEval
+  EcoInnovationStatus, EcoinnovationStatusEval
 # Register your models here.
 
 class Ecocase2ESMInline(admin.TabularInline):
@@ -43,4 +43,4 @@ admin.site.register(EnvironGainEval)
 admin.site.register(EcoEffectPotential)
 admin.site.register(EcoEffectPotentialEval)
 admin.site.register(EcoInnovationStatus)
-admin.site.register(EcocaseEval)
+admin.site.register(EcoinnovationStatusEval)
