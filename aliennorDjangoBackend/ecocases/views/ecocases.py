@@ -843,20 +843,31 @@ def ecocase_details(request, ecocase_id):
             Q(user__username=username)
         )
 
-        if len(environ_gain_evals) != 0 and len(eco_effect_potential_evals) != 0:
-            # user view this ecocase for the first time
+        if len(environ_gain_evals) != 0:
             environ_gain_eval = environ_gain_evals[0]
             environ_gain_eval_dict = model_to_dict(environ_gain_eval)
 
+        if len(eco_effect_potential_evals) != 0:
             eco_effect_potential_eval = eco_effect_potential_evals[0]
-            eco_effect_potential_eval_dict = model_to_dict(eco_effect_potential_eval)
-            eco_effect_potential_eval_dict[
-                'eco_effect_potentials'] = eco_effect_potential_eval.eco_effect_potentials.values()
+        else:
+            # create a new eco effect potential evaluation of this ecocase for the user.
+            eco_effect_potentials = EcoEffectPotential.objects.all()
+            eco_effect_potential_eval = EcoEffectPotentialEval(ecocase=ecocase, user=user)
+            eco_effect_potential_eval.save()
+            for item in eco_effect_potentials:
+                print('eep: ', item)
+                eco_effect_potential_eval.eco_effect_potentials.add(item)
+            eco_effect_potential_eval.save()
+
+        eco_effect_potential_eval_dict = model_to_dict(eco_effect_potential_eval)
+        eco_effect_potential_eval_dict['eco_effect_potentials'] = [model_to_dict(item) for item in eco_effect_potential_eval.eco_effect_potentials.all()]
+
+        print('eco_effect_potential_eval_dict: ', eco_effect_potential_eval_dict)
 
         # --------------------
         # GET "Ecoinnovation Status" and "Ecocase Evaluation"
         # --------------------
-        ecoinnovation_status_evals = EcoEffectPotentialEval.objects.filter(
+        ecoinnovation_status_evals = EcoinnovationStatusEval.objects.filter(
             Q(ecocase=ecocase),
             Q(user__username=username)
         )
@@ -877,13 +888,11 @@ def ecocase_details(request, ecocase_id):
                 'avg': '{:.1f}'.format(avg_rating) if avg_rating is not None else None,
                 'count': rating_count
             },
-            'esmevaluations': esmevaluations_list,
-            # 'ecocase': ecocase[0].get('fields'),
             'ecocase': ecocase_dict,
             'nonESM': nonESMDict,
+            'esmevaluations': esmevaluations_list,
             'environ_gains': environ_gains_list,
             'environ_gain_eval': environ_gain_eval_dict,
-            'eco_effect_potentials': eco_effect_potential_list,
             'eco_effect_potential_eval': eco_effect_potential_eval_dict,
             'ecoinnovation_statuss': ecoinnovation_status_list,
             'ecoinnovation_status_eval': ecoinnovation_status_eval_dict,

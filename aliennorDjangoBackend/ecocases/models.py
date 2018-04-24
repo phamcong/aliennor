@@ -245,7 +245,7 @@ class EnvironmentalGain(models.Model):
 class EnvironGainEval(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
-    environ_gain_level = models.ForeignKey(EnvironmentalGain, on_delete=models.CASCADE, null=False)
+    environ_gain = models.ForeignKey(EnvironmentalGain, on_delete=models.CASCADE, null=False)
     comment = tinymce_models.HTMLField(default='', null=True)
 
     def __str__(self):
@@ -254,7 +254,6 @@ class EnvironGainEval(models.Model):
 
 class EcoEffectPotential(models.Model):
     title = models.CharField(max_length=50, null=False, blank=False)
-    selected = models.BooleanField(default=False, null=False)
     label = models.CharField(max_length=50, null=False, blank=False)
 
     def save(self, *args, **kwargs):
@@ -265,13 +264,14 @@ class EcoEffectPotential(models.Model):
             super(EcoEffectPotential, self).save(*args, **kwargs)
 
     def __str__(self):
-        return self.title + ' - ' + str(self.selected)
+        return self.title
 
 
 class EcoEffectPotentialEval(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
-    eco_effect_potentials = models.ManyToManyField(EcoEffectPotential)
+    eco_effect_potential = models.ForeignKey(EcoEffectPotential, on_delete=models.CASCADE, null=True)
+    selected = models.BooleanField(default=False, null=False)
     comment = tinymce_models.HTMLField(default='', null=True)
 
     def __str__(self):
