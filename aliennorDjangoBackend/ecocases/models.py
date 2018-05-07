@@ -157,31 +157,6 @@ class EcocaseRating(models.Model):
     # def vote_point_options(self):
     #     return vote_point_options
 
-
-class EcoInnovationStatus(models.Model):
-    title = models.CharField(max_length=200, null=False, blank=False)
-    label = models.CharField(max_length=150, null=False, blank=True)
-
-    def save(self, *args, **kwargs):
-        if self.label == '':
-            self.label = self.title
-            super(EcoInnovationStatus, self).save(*args, **kwargs)
-        else:
-            super(EcoInnovationStatus, self).save(*args, **kwargs)
-
-    def __str__(self):
-        return self.title
-
-
-class EcoinnovationStatusEval(models.Model):
-    ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
-    eco_innovation_status = models.ForeignKey(EcoInnovationStatus, on_delete=models.CASCADE)
-
-    def __str__(self):
-        return self.ecocase.title + ' - ' + self.eco_innovation_status.title
-
-
 class Ecocase2ESM(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE)
     esm = models.ForeignKey(ESM, on_delete=models.CASCADE)
@@ -245,7 +220,7 @@ class EnvironmentalGain(models.Model):
 class EnvironGainEval(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
-    environ_gain = models.ForeignKey(EnvironmentalGain, on_delete=models.CASCADE, null=False)
+    environ_gain = models.ForeignKey(EnvironmentalGain, on_delete=models.CASCADE, null=True)
     comment = tinymce_models.HTMLField(default='', null=True)
 
     def __str__(self):
@@ -276,3 +251,28 @@ class EcoEffectPotentialEval(models.Model):
 
     def __str__(self):
         return self.ecocase.title + ' - ' + self.user.username + ' - '
+
+
+class EcoInnovationStatus(models.Model):
+    title = models.CharField(max_length=200, null=False, blank=False)
+    label = models.CharField(max_length=150, null=False, blank=True)
+
+    def save(self, *args, **kwargs):
+        if self.label == '':
+            self.label = self.title
+            super(EcoInnovationStatus, self).save(*args, **kwargs)
+        else:
+            super(EcoInnovationStatus, self).save(*args, **kwargs)
+
+    def __str__(self):
+        return self.title
+
+
+class EcoinnovationStatusEval(models.Model):
+    ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    ecoinnovation_status = models.ForeignKey(EcoInnovationStatus, on_delete=models.CASCADE, null=True)
+    comment = tinymce_models.HTMLField(default='', null=True)
+
+    def __str__(self):
+        return self.ecocase.title + ' - ' + self.ecoinnovation_status.title

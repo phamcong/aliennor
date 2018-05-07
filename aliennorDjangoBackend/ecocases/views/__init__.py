@@ -1,4 +1,4 @@
-from .esmevaluations import *
+from .ecocasevaluations import *
 from .comments import *
 from .ecocases import *
 from .ratings import *

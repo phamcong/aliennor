@@ -760,10 +760,9 @@ def ecocase_details(request, ecocase_id):
     eco_effect_potentials = EcoEffectPotential.objects.all()
     ecoinnovation_statuss = EcoInnovationStatus.objects.all()
     environ_gains_list = [model_to_dict(item) for item in  environ_gains]
-    eco_effect_potential_list = [model_to_dict(item) for item in  eco_effect_potentials]
     ecoinnovation_status_list = [model_to_dict(item) for item in ecoinnovation_statuss]
     environ_gain_eval_dict = {}
-    eco_effect_potential_eval_dict = {}
+    eco_effect_potential_eval_list = []
     ecoinnovation_status_eval_dict = {}
 
     username = request.GET.get('username')
@@ -832,49 +831,69 @@ def ecocase_details(request, ecocase_id):
             nonESMDict['argumentation'] = nonESMEvaluation[0].argumentation
 
         # --------------------
-        # GET "Environmental Gains" and "Eco Effect Potential"
+        # GET "Environmental Gain Eval"
         # --------------------
-        environ_gain_evals = EnvironGainEval.objects.filter(
-            Q(ecocase=ecocase),
-            Q(user__username=username)
-        )
+        try:
+            environ_gain_eval = EnvironGainEval.objects.get(
+                Q(ecocase=ecocase),
+                Q(user__username=username)
+            )
+            environ_gain_eval_dict = model_to_dict(environ_gain_eval)
+            environ_gain_eval_dict['environ_gain'] = model_to_dict(environ_gain_eval.environ_gain) if environ_gain_eval.environ_gain else {}
+
+        except EnvironGainEval.DoesNotExist:
+            environ_gain_eval = EnvironGainEval(ecocase=ecocase, user=user)
+            environ_gain_eval.save()
+            environ_gain_eval_dict = model_to_dict(environ_gain_eval)
+            environ_gain_eval_dict['environ_gain'] = model_to_dict(environ_gain_eval.environ_gain) if environ_gain_eval.environ_gain else {}
+
+        # --------------------
+        # GET "Ecoinnovation Status Eval"
+        # --------------------
+        try:
+            ecostatus_eval = EcoinnovationStatusEval.objects.get(
+                Q(ecocase=ecocase),
+                Q(user__username=username)
+            )
+
+            ecoinnovation_status_eval_dict = model_to_dict(ecostatus_eval)
+            ecoinnovation_status_eval_dict['ecoinnovation_status'] = model_to_dict(ecostatus_eval.ecoinnovation_status) if ecostatus_eval.ecoinnovation_status else {}
+
+        except EcoinnovationStatusEval.DoesNotExist:
+            ecostatus_eval = EcoinnovationStatusEval(ecocase=ecocase, user=user)
+            ecostatus_eval.save()
+            ecoinnovation_status_eval_dict = model_to_dict(ecostatus_eval)
+            ecoinnovation_status_eval_dict['ecoinnovation_status'] = model_to_dict(ecostatus_eval.ecoinnovation_status) if ecostatus_eval.ecoinnovation_status else {}
+
+        # --------------------
+        # GET "Eco Effect Potentials" and "Eco Effect Potential Evals"
+        # --------------------
         eco_effect_potential_evals = EcoEffectPotentialEval.objects.filter(
             Q(ecocase=ecocase),
             Q(user__username=username)
         )
 
-        if len(environ_gain_evals) != 0:
-            environ_gain_eval = environ_gain_evals[0]
-            environ_gain_eval_dict = model_to_dict(environ_gain_eval)
-
         if len(eco_effect_potential_evals) != 0:
-            eco_effect_potential_eval = eco_effect_potential_evals[0]
+            for eco_effect_potential_eval in eco_effect_potential_evals:
+                temp_dict = model_to_dict(eco_effect_potential_eval)
+                temp_dict['eco_effect_potential'] = model_to_dict(eco_effect_potential_eval.eco_effect_potential)
+                eco_effect_potential_eval_list.append(temp_dict)
         else:
             # create a new eco effect potential evaluation of this ecocase for the user.
             eco_effect_potentials = EcoEffectPotential.objects.all()
-            eco_effect_potential_eval = EcoEffectPotentialEval(ecocase=ecocase, user=user)
-            eco_effect_potential_eval.save()
-            for item in eco_effect_potentials:
-                print('eep: ', item)
-                eco_effect_potential_eval.eco_effect_potentials.add(item)
-            eco_effect_potential_eval.save()
-
-        eco_effect_potential_eval_dict = model_to_dict(eco_effect_potential_eval)
-        eco_effect_potential_eval_dict['eco_effect_potentials'] = [model_to_dict(item) for item in eco_effect_potential_eval.eco_effect_potentials.all()]
-
-        print('eco_effect_potential_eval_dict: ', eco_effect_potential_eval_dict)
-
-        # --------------------
-        # GET "Ecoinnovation Status" and "Ecocase Evaluation"
-        # --------------------
-        ecoinnovation_status_evals = EcoinnovationStatusEval.objects.filter(
-            Q(ecocase=ecocase),
-            Q(user__username=username)
-        )
-
-        if len(ecoinnovation_status_evals) != 0:
-            ecoinnovation_status_eval = ecoinnovation_status_evals[0]
-            ecoinnovation_status_eval_dict = model_to_dict(ecoinnovation_status_eval)
+            for eco_effect_potential in eco_effect_potentials:
+                print('eep: ', eco_effect_potential)
+                eco_effect_potential_eval = EcoEffectPotentialEval(
+                    ecocase=ecocase,
+                    user=user,
+                    eco_effect_potential=eco_effect_potential,
+                    selected=False,
+                    comment=''
+                )
+                eco_effect_potential_eval.save()
+                temp_dict = model_to_dict(eco_effect_potential_eval)
+                temp_dict['eco_effect_potential'] = model_to_dict(eco_effect_potential_eval.eco_effect_potential)
+                eco_effect_potential_eval_list.append(temp_dict)
 
     except User.DoesNotExist:
         errors.append('Not authenticated user. Please logged in to tag ecocase.')
@@ -893,7 +912,7 @@ def ecocase_details(request, ecocase_id):
             'esmevaluations': esmevaluations_list,
             'environ_gains': environ_gains_list,
             'environ_gain_eval': environ_gain_eval_dict,
-            'eco_effect_potential_eval': eco_effect_potential_eval_dict,
+            'eco_effect_potential_evals': eco_effect_potential_eval_list,
             'ecoinnovation_statuss': ecoinnovation_status_list,
             'ecoinnovation_status_eval': ecoinnovation_status_eval_dict,
             'comments': list(cmt),

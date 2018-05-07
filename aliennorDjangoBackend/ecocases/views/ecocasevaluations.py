@@ -29,16 +29,17 @@ from ecocases.variables import *
 
 dirspot = os.getcwd()
 
-def submit_esmevaluations(request, ecocase_id, username):
+def submit_ecocaseevaluation(request, ecocase_id, username):
     print("at ecocase views: submit esmevaluations")
+    errors = []
     if request.method == 'POST':
         post_data = json.loads(request.body)
         print('submit_esmevaluations - post_data', post_data)
         submit_esmevaluations = post_data['esmevaluations']
         nonESM = post_data['nonESM']
         updated_environ_gain_eval = post_data['environGainEval']
-        updated_eco_effect_potential_eval = post_data['ecoEffectPotentialEval']
-        updated_ecoinnovation_status_eval = post_data['ecoinnovationStatusEval']
+        updated_eco_effect_potential_eval_list = post_data['ecoEffectPotentialEvals']
+        updated_ecoinnovation_status_eval= post_data['ecoinnovationStatusEval']
 
         ecocase = Ecocase.objects.get(id=ecocase_id)
         user = User.objects.get(username=username)
@@ -85,49 +86,58 @@ def submit_esmevaluations(request, ecocase_id, username):
         # ----------------
         # update Environ Gain Eval
         # ----------------
-        environ_gain_evals = EnvironGainEval.objects.filter(
-            Q(ecocase=ecocase),
-            Q(user__username=username)
-        )
-
-        if len(environ_gain_evals) == 0:
-            EnvironGainEval(ecocase=ecocase, user=user, environ_gain=updated_environ_gain_eval.environ_gain, comment=updated_environ_gain_eval.comment)
-        else:
-            environ_gain_evals[0].environ_gain = updated_environ_gain_eval.environ_gain
-            environ_gain_evals[0].comment = updated_environ_gain_eval.comment
-
-        # ----------------
-        # update Eco Effect Potential Eval
-        # ----------------
         try:
-            eco_effect_potential_eval = EnvironGainEval.objects.get(
-                Q(ecocase=ecocase),
-                Q(user__username=username)
-            )
-            eco_effect_potential_eval.comment = eco_effect_potential_eval.comment
-            for eep in eco_effect_potential_eval.eco_effect_potentials.all():
-                for updated_eep in updated_eco_effect_potential_eval.eco_effect_potentials:
-                    if eep.title == updated_eep.title:
-                        eep.selected = updated_eep.selected
-                        eep.save()
-            eco_effect_potential_eval.save()
-        except Exception as e:
-            print(e)
+            environ_gain = EnvironmentalGain.objects.get(level=updated_environ_gain_eval['environGain'])
+            environ_gain_eval = EnvironGainEval.objects.get(id=updated_environ_gain_eval['id'])
+            environ_gain_eval.environ_gain = environ_gain
+            environ_gain_eval.comment = updated_environ_gain_eval['comment']
+            environ_gain_eval.save()
 
-        if len(environ_gain_evals) == 0:
-            EnvironGainEval(ecocase=ecocase, user=user, environ_gain=updated_environ_gain_eval.environ_gain,
-                            comment=updated_environ_gain_eval.comment)
-        else:
-            environ_gain_evals[0].environ_gain = updated_environ_gain_eval.environ_gain
-            environ_gain_evals[0].comment = updated_environ_gain_eval.comment
-            environ_gain_evals[0].save()
+        except EnvironmentalGain.DoesNotExist:
+            errors.append('Environmental Gain does not exist.')
+            return JsonResponse({
+                'status': 'fail',
+                'errors': errors
+            })
 
         # ----------------
         # update Ecoinnovation Status Eval
         # ----------------
+        try:
+            ecoinnovation_status = EcoInnovationStatus.objects.get(title=updated_ecoinnovation_status_eval['ecoinnovationStatus'])
+            eco_status_eval = EcoinnovationStatusEval.objects.get(id=updated_ecoinnovation_status_eval['id'])
+            eco_status_eval.ecoinnovation_status = ecoinnovation_status
+            eco_status_eval.comment = updated_environ_gain_eval['comment']
+            eco_status_eval.save()
+
+        except EcoInnovationStatus.DoesNotExist:
+            errors.append('Ecoinnovation Status does not exist.')
+            return JsonResponse({
+                'status': 'fail',
+                'errors': errors
+            })
+        # ----------------
+        # update Eco Effect Potential Eval
+        # ----------------
+        for updated_eep_eval in updated_eco_effect_potential_eval_list:
+            try:
+                eep_eval = EcoEffectPotentialEval.objects.get(id=updated_eep_eval['id'])
+                eep_eval.selected = updated_eep_eval['selected']
+                eep_eval.comment = updated_eep_eval['comment']
+                eep_eval.save()
+            except EcoEffectPotentialEval.DoesNotExist:
+                errors.append('Not authenticated user. Please logged in to tag ecocase.')
+                return JsonResponse({
+                    'status': 'fail',
+                    'errors': errors
+                })
 
         return JsonResponse({
-            'status': 'success'
+            'status': 'sumit evaluations successfully'
         })
     else:
-        pass
+        errors.append('Not GET request')
+        return JsonResponse({
+            'status': 'fail',
+            'errors': errors
+        })
