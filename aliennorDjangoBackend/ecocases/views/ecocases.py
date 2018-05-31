@@ -695,6 +695,7 @@ def get_associated_esms(request, ecocase_id):
         associated_esms_summary[esm.title] = {
             'esm': model_to_dict(esm),
             'title': esm.title,
+            'label': esm.label,
             'first_esm_count': 0,
             'second_esm_count': 0
         }

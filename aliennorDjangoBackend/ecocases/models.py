@@ -29,7 +29,7 @@ class Level(models.Model):
 class ESM(models.Model):    
     label = models.CharField(max_length=50, default='')
     title = models.CharField(max_length=100, default='')
-    description = models.CharField(max_length=500, default='')
+    description = models.CharField(max_length=500, default='', null=True)
     logo_url = models.CharField(max_length=500, default='', null=True)
     image_url = models.CharField(max_length=500, default='', null=True)
     pdf_url = models.CharField(max_length=500, default='', null=True)
