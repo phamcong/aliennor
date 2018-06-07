@@ -54,7 +54,9 @@ class Ecocase(models.Model):
     categories = models.ManyToManyField(Category)
     first_esm = models.ForeignKey(ESM, null=True, blank=True, on_delete=models.CASCADE, related_name='first_esm')
     second_esm = models.ForeignKey(ESM, null=True, blank=True, on_delete=models.CASCADE, related_name='second_esm')
-    evaluated_by_users = models.ManyToManyField(User)
+    
+    evaluated_by_users = models.ManyToManyField(User, related_name='evaluated_by_users')
+    evaluate_by_users = models.ManyToManyField(User, related_name='evaluate_by_users')
 
     def __str__(self):
         return self.title

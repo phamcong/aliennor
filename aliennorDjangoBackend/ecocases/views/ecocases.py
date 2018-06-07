@@ -30,6 +30,8 @@ import base64
 
 from ecocases.variables import *
 
+from .shared import *
+
 AWS_STORAGE_BUCKET_NAME = os.environ['AWS_STORAGE_BUCKET_NAME']
 AWS_ACCESS_KEY_ID = os.environ['AWS_ACCESS_KEY_ID']
 AWS_SECRET_ACCESS_KEY = os.environ['AWS_SECRET_ACCESS_KEY']
@@ -92,158 +94,6 @@ class EcocaseCreateView(FormUserNeededMixin, FormView):
             return self.form_valid(form)
         else:
             return self.form_invalid(form)
-
-
-def get_tagged_ecocases(request):
-    print("at ecocases view: get tagged ecocases");
-    if request.method != 'GET':
-        pass
-
-    esms_params = request.GET.get('esms', '').split(',')
-    categories_params = request.GET.get('categories', '').split(',')
-    selected_esms = [esm for esm in esms_params if esm != '']
-    selected_categories = [ctg for ctg in categories_params if ctg != '']
-
-    esms_values = ESM.objects.all().values()
-    categories_values = Category.objects.all().values()
-    ecocases = Ecocase.objects.filter(
-        Q(first_esm__isnull = False) | Q(second_esm__isnull = False)
-    )
-
-    found_ecocases_array = []
-    if len(selected_esms) == len(esms_values) and len(selected_categories) == len(categories_values):
-        found_ecocases = ecocases
-    else:
-        # Apply cateogories filter
-        ecocase_by_categories = []
-        if len(selected_categories) == len(categories_values):
-            ecocase_by_categories = ecocases
-        else:
-            for ecocase in ecocases:
-                categories = [ctg['title'] for ctg in ecocase.categories.values()]
-                if not set(categories).isdisjoint(selected_categories):
-                    ecocase_by_categories.append(ecocase)
-
-        # Apply esms filter
-        ecocase_by_esms = []
-        if len(selected_esms) == len(esms_values):
-            ecocase_by_esms = ecocase_by_categories
-        else:
-            for ecocase in ecocase_by_categories:
-                associated_esms_titles = []
-                if (ecocase.first_esm != None):
-                    associated_esms_titles.append(ecocase.first_esm.title)
-                
-                if (ecocase.second_esm != None):
-                    associated_esms_titles.append(ecocase.second_esm.title)
-                
-                if not set(associated_esms_titles).isdisjoint(selected_esms):
-                        ecocase_by_esms.append(ecocase)
-        found_ecocases = ecocase_by_esms
-
-    count_results = {}
-
-    count_results['by_esms'] = {}
-    count_results['by_ctgs'] = {}
-
-    for esm in esms_values:
-        count_results['by_esms'][esm['title']] = 0
-    for ctg in categories_values:
-        count_results['by_ctgs'][ctg['title']] = 0
-
-    for ecocase in found_ecocases:
-        if (ecocase.first_esm != None):
-            count_results['by_esms'][ecocase.first_esm.title] += 1;
-        if (ecocase.second_esm != None):
-            count_results['by_esms'][ecocase.second_esm.title] += 1;
-        if (ecocase.categories != None):
-            ctgs = ecocase.categories.values()
-            for ctg in ctgs:
-                count_results['by_ctgs'][ctg['title']] += 1;
-
-    return JsonResponse({
-        'status': 'success',
-        'data': {
-            'count_results': count_results,
-            'ecocases': ecocases_set_to_array(found_ecocases)
-        }
-    })
-
-
-def get_tagged_ecocases_by_user(request, username):
-    print("at ecocases view: get tagged ecocases");
-    if request.method != 'GET':
-        pass
-
-    esms_params = request.GET.get('esms', '').split(',')
-    categories_params = request.GET.get('categories', '').split(',')
-    selected_esms = [esm for esm in esms_params if esm != '']
-    selected_categories = [ctg for ctg in categories_params if ctg != '']
-
-    esms_values = ESM.objects.all().values()
-    categories_values = Category.objects.all().values()
-    user = User.objects.get(username=username)
-
-    ecocases = Ecocase.objects.filter(evaluated_by_users=user)
-
-    found_ecocases_array = []
-    if len(selected_esms) == len(esms_values) and len(selected_categories) == len(categories_values):
-        found_ecocases = ecocases
-    else:
-        # Apply cateogories filter
-        ecocase_by_categories = []
-        if len(selected_categories) == len(categories_values):
-            ecocase_by_categories = ecocases
-        else:
-            for ecocase in ecocases:
-                categories = [ctg['title'] for ctg in ecocase.categories.values()]
-                if not set(categories).isdisjoint(selected_categories):
-                    ecocase_by_categories.append(ecocase)
-
-        # Apply esms filter
-        ecocase_by_esms = []
-        if len(selected_esms) == len(esms_values):
-            ecocase_by_esms = ecocase_by_categories
-        else:
-            for ecocase in ecocase_by_categories:
-                associated_esms_titles = []
-                if (ecocase.first_esm != None):
-                    associated_esms_titles.append(ecocase.first_esm.title)
-                
-                if (ecocase.second_esm != None):
-                    associated_esms_titles.append(ecocase.second_esm.title)
-                
-                if not set(associated_esms_titles).isdisjoint(selected_esms):
-                        ecocase_by_esms.append(ecocase)
-        found_ecocases = ecocase_by_esms
-
-    count_results = {}
-
-    count_results['by_esms'] = {}
-    count_results['by_ctgs'] = {}
-
-    for esm in esms_values:
-        count_results['by_esms'][esm['title']] = 0
-    for ctg in categories_values:
-        count_results['by_ctgs'][ctg['title']] = 0
-
-    for ecocase in found_ecocases:
-        if (ecocase.first_esm != None):
-            count_results['by_esms'][ecocase.first_esm.title] += 1;
-        if (ecocase.second_esm != None):
-            count_results['by_esms'][ecocase.second_esm.title] += 1;
-        if (ecocase.categories != None):
-            ctgs = ecocase.categories.values()
-            for ctg in ctgs:
-                count_results['by_ctgs'][ctg['title']] += 1;
-
-    return JsonResponse({
-        'status': 'success',
-        'data': {
-            'count_results': count_results,
-            'ecocases': ecocases_set_to_array(found_ecocases)
-        }
-    })
 
 
 def get_all_ecocases(request):
@@ -332,101 +182,6 @@ def get_ecocases(request):
         }
     })
 
-
-def get_untagged_ecocases(request):
-    print("at ecocases view: get untagged ecocases");
-    if request.method != 'GET':
-        pass
-
-    categories_params = request.GET.get('categories', '').split(',')
-    selected_categories = [ctg for ctg in categories_params if ctg != '']
-
-    esms_values = ESM.objects.all().values()
-    categories_values = Category.objects.all().values()
-    
-    untagged_ecocases = Ecocase.objects.filter(
-        Q(first_esm__exact = None),
-        Q(second_esm__exact = None)
-    )
-
-    if len(selected_categories) == len(categories_values):
-        found_untagged_ecocases = untagged_ecocases
-    else:
-        # Apply cateogories filter
-        untagged_ecocase_by_categories = []
-        for ecocase in untagged_ecocases:
-            categories = [ctg['title'] for ctg in ecocase.categories.values()]
-            if not set(categories).isdisjoint(selected_categories):
-                untagged_ecocase_by_categories.append(ecocase)
-
-        found_untagged_ecocases = untagged_ecocase_by_categories
-
-    count_results_by_ctgs = {}
-
-    for ctg in categories_values:
-        count_results_by_ctgs[ctg['title']] = 0
-
-    for ecocase in found_untagged_ecocases:
-        if (ecocase.categories != None):
-            ctgs = ecocase.categories.values()
-            for ctg in ctgs:
-                count_results_by_ctgs[ctg['title']] += 1;
-    
-    return JsonResponse({
-        'status': 'success',
-        'data': {
-            'count_results_by_ctgs': count_results_by_ctgs,
-            'untagged_ecocases': ecocases_set_to_array(found_untagged_ecocases)
-        }
-    })
-
-
-def get_untagged_ecocases_by_user(request, username):
-    print("at ecocases view: get untagged ecocases");
-    if request.method != 'GET':
-        pass
-
-    categories_params = request.GET.get('categories', '').split(',')
-    selected_categories = [ctg for ctg in categories_params if ctg != '']
-
-    esms_values = ESM.objects.all().values()
-    categories_values = Category.objects.all().values()
-    user = User.objects.get(username=username)
-    
-    untagged_ecocases = Ecocase.objects.exclude(evaluated_by_users=user)
-
-    if len(selected_categories) == len(categories_values):
-        found_untagged_ecocases = untagged_ecocases
-    else:
-        # Apply cateogories filter
-        untagged_ecocase_by_categories = []
-        for ecocase in untagged_ecocases:
-            categories = [ctg['title'] for ctg in ecocase.categories.values()]
-            if not set(categories).isdisjoint(selected_categories):
-                untagged_ecocase_by_categories.append(ecocase)
-
-        found_untagged_ecocases = untagged_ecocase_by_categories
-
-    count_results_by_ctgs = {}
-
-    for ctg in categories_values:
-        count_results_by_ctgs[ctg['title']] = 0
-
-    for ecocase in found_untagged_ecocases:
-        if (ecocase.categories != None):
-            ctgs = ecocase.categories.values()
-            for ctg in ctgs:
-                count_results_by_ctgs[ctg['title']] += 1;
-    
-    return JsonResponse({
-        'status': 'success',
-        'data': {
-            'count_results_by_ctgs': count_results_by_ctgs,
-            'untagged_ecocases': ecocases_set_to_array(found_untagged_ecocases)
-        }
-    })
-
-
 def get_esms_weights_tagged_ecocase(request, ecocase_id):
     ecocase = Ecocase.objects.get(id=ecocase_id)
     esms = ESM.objects.all()
@@ -446,16 +201,6 @@ def get_esms_weights_tagged_ecocase(request, ecocase_id):
             'esms_weights': esms_weights_dict
         }
     })
-
-
-def ecocases_set_to_array(ecocases):
-    ecocases_array = []
-    for ecocase in ecocases:
-        ecocase_dict = model_to_dict_ecocase(ecocase)
-        ecocases_array.append(ecocase_dict)
-    return ecocases_array
-    # print('ecocases: ', ecocases[next(iter(ecocases))])
-
 
 # check if an ecocase is associated with one of esm in seletec_esms
 def is_associated(ecocase, selected_esms):
@@ -697,6 +442,7 @@ def get_associated_esms(request, ecocase_id):
             'title': esm.title,
             'label': esm.label,
             'first_esm_count': 0,
+            'logo_url': esm.logo_url,
             'second_esm_count': 0
         }
     
@@ -716,6 +462,7 @@ def get_associated_esms(request, ecocase_id):
 
 
 def ecocase_details(request, ecocase_id):
+    nonESMDict = {}
     print('at ecocase detail')
     errors = []
     if request.method != 'GET':
@@ -925,18 +672,7 @@ class Round(Func):
     function = 'ROUND'
     template='%(function)s(%(expressions)s, 1)'
 
-def model_to_dict_ecocase(ecocase):
-    ecocase_dict = model_to_dict(ecocase)
-    ecocase_dict['levels'] = [item['title'] for item in ecocase.levels.values()]
-    ecocase_dict['categories'] = [item['title'] for item in ecocase.categories.values()]
-    ecocase_dict['evaluated_by_users'] = [item['username'] for item in ecocase.evaluated_by_users.values()]
-    if (ecocase.first_esm != None):
-        ecocase_dict['first_esm'] = model_to_dict(ecocase.first_esm)
-    if (ecocase.second_esm != None):
-        ecocase_dict['second_esm'] = model_to_dict(ecocase.second_esm)
-    ecocase_dict['image_urls'] = ecocase.image_urls()
-    
-    return ecocase_dict
+
 
 def ecocases_summary(request):
     if request.method != 'GET':

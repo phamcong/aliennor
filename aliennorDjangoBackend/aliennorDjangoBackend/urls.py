@@ -29,6 +29,7 @@ urlpatterns = [
     url(r'^api/esms/(?P<esm_id>[0-9]+)/$', views.get_esm_by_id, name='get_esm_by_id'),
     url(r'^api/esms/$', views.get_esms, name='get_esms'),
     url(r'^api/esms/(?P<esm_id>[0-9]+)/ecocases$', views.get_ecocases_by_esm, name='get_ecocases_by_esm'),
+    url(r'^api/esms/(?P<esm_id>[0-9]+)/taggedecocases$', views.get_tagged_ecocases_by_esm, name='get_tagged_ecocases_by_esm'),
     url(r'^api/auth/csrf$', views.send_csrf, name='send csrf token'),
     url(r'^api/auth/login/$', views.login, name='login'),
     url(r'^api/auth/register/$', views.register, name='register'),

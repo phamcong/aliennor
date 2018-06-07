@@ -21,6 +21,8 @@ from django.core import serializers
 
 from django.db.models import Q
 
+from .shared import *
+
 def get_esms(request):
     print("at get_esms view: get esms");
     if request.method != 'GET':
@@ -89,6 +91,37 @@ def get_ecocases_by_esm(request, esm_id):
         }
     })
 
+def get_tagged_ecocases_by_esm(request, esm_id):
+    ecocases_array = []
+    esm = ESM.objects.get(id=esm_id)
+    ecocases = Ecocase.objects.all()
+    for ecocase in ecocases:
+        evaluations_first_esm = ESMEvaluation.objects.filter(
+            Q(ecocase2esm__ecocase=ecocase),
+            Q(ecocase2esm__esm=esm),
+            Q(is_first_esm=True)
+        ).all()
+        evaluations_second_esm = ESMEvaluation.objects.filter(
+            Q(ecocase2esm__ecocase=ecocase),
+            Q(ecocase2esm__esm=esm),
+            Q(is_second_esm=True)
+        ).all()
+
+        if len(evaluations_first_esm) > 0 or len(evaluations_second_esm) > 0:
+            ecocase_dict = model_to_dict_ecocase(ecocase)
+            ecocase_dict['first_esm_count'] = len(evaluations_first_esm)
+            ecocase_dict['second_esm_count'] = len(evaluations_second_esm)
+            ecocases_array.append(ecocase_dict)
+
+    return JsonResponse({
+        'status': 'get tagged ecocases by esms successfully',
+        'data': {
+            'ecocases': ecocases_array
+        }
+    })
+
+
+
 def get_esm_by_id(request, esm_id):
     esm = ESM.objects.get(id=esm_id);
 
@@ -98,16 +131,3 @@ def get_esm_by_id(request, esm_id):
             'esm': model_to_dict(esm)
         }
     })
-
-def model_to_dict_ecocase(ecocase):
-    ecocase_dict = model_to_dict(ecocase)
-    ecocase_dict['levels'] = [item['title'] for item in ecocase.levels.values()]
-    ecocase_dict['categories'] = [item['title'] for item in ecocase.categories.values()]
-    ecocase_dict['evaluated_by_users'] = [item['username'] for item in ecocase.evaluated_by_users.values()]
-    if (ecocase.first_esm != None):
-        ecocase_dict['first_esm'] = model_to_dict(ecocase.first_esm)
-    if (ecocase.second_esm != None):
-        ecocase_dict['second_esm'] = model_to_dict(ecocase.second_esm)
-    ecocase_dict['image_urls'] = ecocase.image_urls()
-    
-    return ecocase_dict

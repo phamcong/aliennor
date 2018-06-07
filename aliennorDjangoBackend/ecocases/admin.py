@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.contrib.auth.models import Group, User
 from .models import Ecocase, EcocaseRating, EcocaseComment, ESM, Ecocase2ESM, \
   Category, Level, EcocaseImage, ESMEvaluation, Question, NonESMEvaluation, \
   EnvironmentalGain, EnvironGainEval, EcoEffectPotential, EcoEffectPotentialEval, \
@@ -17,6 +18,13 @@ class EcocaseInline(admin.TabularInline):
   model = Ecocase
   extra = 0
 
+# class GroupInline(admin.TabularInline):
+#   model = Group
+#   extra = 0
+
+# class UserAdmin(admin.ModelAdmin):
+#   inlines = [GroupInline]
+
 class ESMEvaluationInline(admin.TabularInline):
   model = ESMEvaluation
   extra = 0
@@ -27,6 +35,8 @@ class EcocaseAdmin(admin.ModelAdmin):
 class Ecocase2ESMAdmin(admin.ModelAdmin):
   inlines = [ESMEvaluationInline]
 
+# admin.site.unregister(User)
+# admin.site.register(User, UserAdmin)
 admin.site.register(Ecocase, EcocaseAdmin)
 admin.site.register(EcocaseRating)
 admin.site.register(EcocaseComment)

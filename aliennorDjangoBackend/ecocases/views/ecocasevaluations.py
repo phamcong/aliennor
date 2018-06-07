@@ -29,6 +29,8 @@ from ecocases.variables import *
 
 dirspot = os.getcwd()
 
+from .shared import *
+
 def submit_ecocaseevaluation(request, ecocase_id, username):
     print("at ecocase views: submit esmevaluations")
     errors = []
@@ -141,3 +143,253 @@ def submit_ecocaseevaluation(request, ecocase_id, username):
             'status': 'fail',
             'errors': errors
         })
+
+def get_tagged_ecocases(request):
+    print("at ecocases view: get tagged ecocases");
+    if request.method != 'GET':
+        pass
+
+    esms_params = request.GET.get('esms', '').split(',')
+    categories_params = request.GET.get('categories', '').split(',')
+    selected_esms = [esm for esm in esms_params if esm != '']
+    selected_categories = [ctg for ctg in categories_params if ctg != '']
+
+    esms_values = ESM.objects.all().values()
+    categories_values = Category.objects.all().values()
+    ecocases = Ecocase.objects.filter(
+        Q(first_esm__isnull = False) | Q(second_esm__isnull = False)
+    )
+
+    found_ecocases_array = []
+    if len(selected_esms) == len(esms_values) and len(selected_categories) == len(categories_values):
+        found_ecocases = ecocases
+    else:
+        # Apply cateogories filter
+        ecocase_by_categories = []
+        if len(selected_categories) == len(categories_values):
+            ecocase_by_categories = ecocases
+        else:
+            for ecocase in ecocases:
+                categories = [ctg['title'] for ctg in ecocase.categories.values()]
+                if not set(categories).isdisjoint(selected_categories):
+                    ecocase_by_categories.append(ecocase)
+
+        # Apply esms filter
+        ecocase_by_esms = []
+        if len(selected_esms) == len(esms_values):
+            ecocase_by_esms = ecocase_by_categories
+        else:
+            for ecocase in ecocase_by_categories:
+                associated_esms_titles = []
+                if (ecocase.first_esm != None):
+                    associated_esms_titles.append(ecocase.first_esm.title)
+                
+                if (ecocase.second_esm != None):
+                    associated_esms_titles.append(ecocase.second_esm.title)
+                
+                if not set(associated_esms_titles).isdisjoint(selected_esms):
+                        ecocase_by_esms.append(ecocase)
+        found_ecocases = ecocase_by_esms
+
+    count_results = {}
+
+    count_results['by_esms'] = {}
+    count_results['by_ctgs'] = {}
+
+    for esm in esms_values:
+        count_results['by_esms'][esm['title']] = 0
+    for ctg in categories_values:
+        count_results['by_ctgs'][ctg['title']] = 0
+
+    for ecocase in found_ecocases:
+        if (ecocase.first_esm != None):
+            count_results['by_esms'][ecocase.first_esm.title] += 1;
+        if (ecocase.second_esm != None):
+            count_results['by_esms'][ecocase.second_esm.title] += 1;
+        if (ecocase.categories != None):
+            ctgs = ecocase.categories.values()
+            for ctg in ctgs:
+                count_results['by_ctgs'][ctg['title']] += 1;
+
+    return JsonResponse({
+        'status': 'success',
+        'data': {
+            'count_results': count_results,
+            'ecocases': ecocases_set_to_array(found_ecocases)
+        }
+    })
+
+
+
+def get_tagged_ecocases_by_user(request, username):
+    print("at ecocases view: get tagged ecocases by user");
+    if request.method != 'GET':
+        pass
+
+    esms_params = request.GET.get('esms', '').split(',')
+    categories_params = request.GET.get('categories', '').split(',')
+    selected_esms = [esm for esm in esms_params if esm != '']
+    selected_categories = [ctg for ctg in categories_params if ctg != '']
+
+    esms_values = ESM.objects.all().values()
+    categories_values = Category.objects.all().values()
+    user = User.objects.get(username=username)
+
+    ecocases = Ecocase.objects.filter(evaluated_by_users=user)
+
+    found_ecocases_array = []
+    if len(selected_esms) == len(esms_values) and len(selected_categories) == len(categories_values):
+        found_ecocases = ecocases
+    else:
+        # Apply cateogories filter
+        ecocase_by_categories = []
+        if len(selected_categories) == len(categories_values):
+            ecocase_by_categories = ecocases
+        else:
+            for ecocase in ecocases:
+                categories = [ctg['title'] for ctg in ecocase.categories.values()]
+                if not set(categories).isdisjoint(selected_categories):
+                    ecocase_by_categories.append(ecocase)
+
+        # Apply esms filter
+        ecocase_by_esms = []
+        if len(selected_esms) == len(esms_values):
+            ecocase_by_esms = ecocase_by_categories
+        else:
+            for ecocase in ecocase_by_categories:
+                associated_esms_titles = []
+                if (ecocase.first_esm != None):
+                    associated_esms_titles.append(ecocase.first_esm.title)
+                
+                if (ecocase.second_esm != None):
+                    associated_esms_titles.append(ecocase.second_esm.title)
+                
+                if not set(associated_esms_titles).isdisjoint(selected_esms):
+                        ecocase_by_esms.append(ecocase)
+        found_ecocases = ecocase_by_esms
+
+    count_results = {}
+
+    count_results['by_esms'] = {}
+    count_results['by_ctgs'] = {}
+
+    for esm in esms_values:
+        count_results['by_esms'][esm['title']] = 0
+    for ctg in categories_values:
+        count_results['by_ctgs'][ctg['title']] = 0
+
+    for ecocase in found_ecocases:
+        if (ecocase.first_esm != None):
+            count_results['by_esms'][ecocase.first_esm.title] += 1;
+        if (ecocase.second_esm != None):
+            count_results['by_esms'][ecocase.second_esm.title] += 1;
+        if (ecocase.categories != None):
+            ctgs = ecocase.categories.values()
+            for ctg in ctgs:
+                count_results['by_ctgs'][ctg['title']] += 1;
+
+    return JsonResponse({
+        'status': 'success',
+        'data': {
+            'count_results': count_results,
+            'ecocases': ecocases_set_to_array(found_ecocases)
+        }
+    })
+
+
+
+def get_untagged_ecocases(request):
+    print("at ecocaseevaluation view: get untagged ecocases");
+    if request.method != 'GET':
+        pass
+
+    categories_params = request.GET.get('categories', '').split(',')
+    selected_categories = [ctg for ctg in categories_params if ctg != '']
+
+    esms_values = ESM.objects.all().values()
+    categories_values = Category.objects.all().values()
+    
+    untagged_ecocases = Ecocase.objects.filter(
+        Q(first_esm__exact = None),
+        Q(second_esm__exact = None)
+    )
+
+    if len(selected_categories) == len(categories_values):
+        found_untagged_ecocases = untagged_ecocases
+    else:
+        # Apply cateogories filter
+        untagged_ecocase_by_categories = []
+        for ecocase in untagged_ecocases:
+            categories = [ctg['title'] for ctg in ecocase.categories.values()]
+            if not set(categories).isdisjoint(selected_categories):
+                untagged_ecocase_by_categories.append(ecocase)
+
+        found_untagged_ecocases = untagged_ecocase_by_categories
+
+    count_results_by_ctgs = {}
+
+    for ctg in categories_values:
+        count_results_by_ctgs[ctg['title']] = 0
+
+    for ecocase in found_untagged_ecocases:
+        if (ecocase.categories != None):
+            ctgs = ecocase.categories.values()
+            for ctg in ctgs:
+                count_results_by_ctgs[ctg['title']] += 1;
+    
+    return JsonResponse({
+        'status': 'success',
+        'data': {
+            'count_results_by_ctgs': count_results_by_ctgs,
+            'untagged_ecocases': ecocases_set_to_array(found_untagged_ecocases)
+        }
+    })
+
+
+def get_untagged_ecocases_by_user(request, username):
+    print("at ecocaseevaluation view: get untagged ecocases by user");
+    if request.method != 'GET':
+        pass
+
+    categories_params = request.GET.get('categories', '').split(',')
+    selected_categories = [ctg for ctg in categories_params if ctg != '']
+
+    esms_values = ESM.objects.all().values()
+    categories_values = Category.objects.all().values()
+    user = User.objects.get(username=username)
+    
+    ecocases_user = Ecocase.objects.filter(evaluate_by_users=user)
+    untagged_ecocases = ecocases_user.exclude(evaluated_by_users=user)
+
+    print('number of untagged cases by' + username + ': ' + str(len(untagged_ecocases)))
+
+    if len(selected_categories) == len(categories_values):
+        found_untagged_ecocases = untagged_ecocases
+    else:
+        # Apply cateogories filter
+        untagged_ecocase_by_categories = []
+        for ecocase in untagged_ecocases:
+            categories = [ctg['title'] for ctg in ecocase.categories.values()]
+            if not set(categories).isdisjoint(selected_categories):
+                untagged_ecocase_by_categories.append(ecocase)
+
+        found_untagged_ecocases = untagged_ecocase_by_categories
+
+    count_results_by_ctgs = {}
+
+    for ctg in categories_values:
+        count_results_by_ctgs[ctg['title']] = 0
+
+    for ecocase in found_untagged_ecocases:
+        if (ecocase.categories != None):
+            ctgs = ecocase.categories.values()
+            for ctg in ctgs:
+                count_results_by_ctgs[ctg['title']] += 1;
+    
+    return JsonResponse({
+        'status': 'success',
+        'data': {
+            'count_results_by_ctgs': count_results_by_ctgs,
+            'untagged_ecocases': ecocases_set_to_array(found_untagged_ecocases)
+        }
+    })
