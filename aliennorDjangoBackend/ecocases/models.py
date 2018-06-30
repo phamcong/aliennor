@@ -207,6 +207,7 @@ class NonESMEvaluation(models.Model):
 class EnvironmentalGain(models.Model):
     level = models.CharField(max_length=50, null=False, blank=False)
     label = models.CharField(max_length=50, null=False, blank=False)
+    color = models.TextField(max_length=10, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if self.label == '':
@@ -226,7 +227,7 @@ class EnvironGainEval(models.Model):
     comment = tinymce_models.HTMLField(default='', null=True)
 
     def __str__(self):
-        return self.ecocase.title + ' - ' + self.user.username + ' - ' + self.environ_gain_level.level
+        return self.ecocase.title + ' - ' + self.user.username + ' - ' + self.environ_gain.level
 
 
 class EcoEffectPotential(models.Model):
