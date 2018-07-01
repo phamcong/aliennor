@@ -40,6 +40,9 @@ def submit_ecocaseevaluation(request, ecocase_id, username):
         submit_esmevaluations = post_data['esmevaluations']
         nonESM = post_data['nonESM']
         updated_environ_gain_eval = post_data['environGainEval']
+        updated_rebound_potential_eval = post_data['reboundPotentialEval']
+        updated_mass_effect_potential_eval = post_data['massEffectPotentialEval']
+        updated_ecocase_general_eval = post_data['ecocaseGeneralEval']
         updated_eco_effect_potential_eval_list = post_data['ecoEffectPotentialEvals']
         updated_ecoinnovation_status_eval= post_data['ecoinnovationStatusEval']
 
@@ -89,7 +92,7 @@ def submit_ecocaseevaluation(request, ecocase_id, username):
         # update Environ Gain Eval
         # ----------------
         try:
-            environ_gain = EnvironmentalGain.objects.get(level=updated_environ_gain_eval['environGain'])
+            environ_gain = EnvironmentalGain.objects.get(level=updated_environ_gain_eval['environ_gain'])
             environ_gain_eval = EnvironGainEval.objects.get(id=updated_environ_gain_eval['id'])
             environ_gain_eval.environ_gain = environ_gain
             environ_gain_eval.comment = updated_environ_gain_eval['comment']
@@ -102,6 +105,54 @@ def submit_ecocaseevaluation(request, ecocase_id, username):
                 'errors': errors
             })
 
+        # ----------------
+        # update Rebound Potential Eval
+        # ----------------
+        try:
+            rebound_potential = ReboundPotential.objects.get(level=updated_rebound_potential_eval['rebound_potential'])
+            rebound_potential_eval = ReboundPotentialEval.objects.get(id=updated_rebound_potential_eval['id'])
+            rebound_potential_eval.rebound_potential = rebound_potential
+            rebound_potential_eval.save()
+
+        except ReboundPotential.DoesNotExist:
+            errors.append('Rebound Potential does not exist.')
+            return JsonResponse({
+                'status': 'fail',
+                'errors': errors
+            })
+
+        # ----------------
+        # update Mass Effect Potential Eval
+        # ----------------
+        try:
+            mass_effect_potential = MassEffectPotential.objects.get(level=updated_mass_effect_potential_eval['mass_effect_potential'])
+            mass_effect_potential_eval = MassEffectPotentialEval.objects.get(id=updated_mass_effect_potential_eval['id'])
+            mass_effect_potential_eval.mass_effect_potential = mass_effect_potential
+            mass_effect_potential_eval.save()
+
+        except MassEffectPotential.DoesNotExist:
+            errors.append('Mass Effect Potential does not exist.')
+            return JsonResponse({
+                'status': 'fail',
+                'errors': errors
+            })
+
+        # ----------------
+        # update Ecocase General Eval
+        # ----------------
+        try:
+            ecocase_general_eval = EcocaseGeneralEval.objects.get(id=updated_ecocase_general_eval['id'])
+            ecocase_general_eval.is_inspiring = updated_ecocase_general_eval['is_inspiring']
+            ecocase_general_eval.social_consequences_comment = updated_ecocase_general_eval['social_consequences_comment']
+            ecocase_general_eval.case_characterizations_comment = updated_ecocase_general_eval['case_characterizations_comment']
+            ecocase_general_eval.save()
+
+        except EcocaseGeneralEval.DoesNotExist:
+            errors.append('Ecocase General Eval Potential does not exist.')
+            return JsonResponse({
+                'status': 'fail',
+                'errors': errors
+            })
         # ----------------
         # update Ecoinnovation Status Eval
         # ----------------

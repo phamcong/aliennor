@@ -505,9 +505,14 @@ def ecocase_details(request, ecocase_id):
     esmevaluations_list = []
 
     environ_gains = EnvironmentalGain.objects.all()
+    rebound_potentials = ReboundPotential.objects.all()
+    mass_effect_potentials = MassEffectPotential.objects.all()
+    
     eco_effect_potentials = EcoEffectPotential.objects.all()
     ecoinnovation_statuss = EcoInnovationStatus.objects.all()
     environ_gains_list = [model_to_dict(item) for item in  environ_gains]
+    rebound_potentials_list = [model_to_dict(item) for item in  rebound_potentials]
+    mass_effect_potentials_list = [model_to_dict(item) for item in  mass_effect_potentials]
     ecoinnovation_status_list = [model_to_dict(item) for item in ecoinnovation_statuss]
     environ_gain_eval_dict = {}
     eco_effect_potential_eval_list = []
@@ -596,6 +601,55 @@ def ecocase_details(request, ecocase_id):
             environ_gain_eval_dict['environ_gain'] = model_to_dict(environ_gain_eval.environ_gain) if environ_gain_eval.environ_gain else {}
 
         # --------------------
+        # GET "Rebound Potential Eval"
+        # --------------------
+        try:
+            rebound_potential_eval = ReboundPotentialEval.objects.get(
+                Q(ecocase=ecocase),
+                Q(user__username=username)
+            )
+            rebound_potential_eval_dict = model_to_dict(rebound_potential_eval)
+            rebound_potential_eval_dict['rebound_potential'] = model_to_dict(rebound_potential_eval.rebound_potential) if rebound_potential_eval.rebound_potential else {}
+
+        except ReboundPotentialEval.DoesNotExist:
+            rebound_potential_eval = ReboundPotentialEval(ecocase=ecocase, user=user)
+            rebound_potential_eval.save()
+            rebound_potential_eval_dict = model_to_dict(rebound_potential_eval)
+            rebound_potential_eval_dict['rebound_potential'] = model_to_dict(rebound_potential_eval.rebound_potential) if rebound_potential_eval.rebound_potential else {}
+
+        # --------------------
+        # GET "Mass Effect Potential Eval"
+        # --------------------
+        try:
+            mass_effect_potential_eval = MassEffectPotentialEval.objects.get(
+                Q(ecocase=ecocase),
+                Q(user__username=username)
+            )
+            mass_effect_potential_eval_dict = model_to_dict(mass_effect_potential_eval)
+            mass_effect_potential_eval_dict['mass_effect_potential'] = model_to_dict(mass_effect_potential_eval.mass_effect_potential) if mass_effect_potential_eval.mass_effect_potential else {}
+
+        except MassEffectPotentialEval.DoesNotExist:
+            mass_effect_potential_eval = MassEffectPotentialEval(ecocase=ecocase, user=user)
+            mass_effect_potential_eval.save()
+            mass_effect_potential_eval_dict = model_to_dict(mass_effect_potential_eval)
+            mass_effect_potential_eval_dict['mass_effect_potential'] = model_to_dict(mass_effect_potential_eval.mass_effect_potential) if mass_effect_potential_eval.mass_effect_potential else {}
+
+        # --------------------
+        # GET "Ecocase General Eval"
+        # --------------------
+        try:
+            ecocase_general_eval = EcocaseGeneralEval.objects.get(
+                Q(ecocase=ecocase),
+                Q(user__username=username)
+            )
+            ecocase_general_eval_dict = model_to_dict(ecocase_general_eval)
+
+        except EcocaseGeneralEval.DoesNotExist:
+            ecocase_general_eval = EcocaseGeneralEval(ecocase=ecocase, user=user)
+            ecocase_general_eval.save()
+            ecocase_general_eval_dict = model_to_dict(ecocase_general_eval)
+
+        # --------------------
         # GET "Ecoinnovation Status Eval"
         # --------------------
         try:
@@ -660,6 +714,11 @@ def ecocase_details(request, ecocase_id):
             'esmevaluations': esmevaluations_list,
             'environ_gains': environ_gains_list,
             'environ_gain_eval': environ_gain_eval_dict,
+            'rebound_potentials': rebound_potentials_list,
+            'rebound_potential_eval': rebound_potential_eval_dict,
+            'mass_effect_potentials': mass_effect_potentials_list,
+            'mass_effect_potential_eval': mass_effect_potential_eval_dict,
+            'ecocase_general_eval': ecocase_general_eval_dict,
             'eco_effect_potential_evals': eco_effect_potential_eval_list,
             'ecoinnovation_statuss': ecoinnovation_status_list,
             'ecoinnovation_status_eval': ecoinnovation_status_eval_dict,

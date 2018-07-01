@@ -1,9 +1,6 @@
 from django.contrib import admin
 from django.contrib.auth.models import Group, User
-from .models import Ecocase, EcocaseRating, EcocaseComment, ESM, Ecocase2ESM, \
-  Category, Level, EcocaseImage, ESMEvaluation, Question, NonESMEvaluation, \
-  EnvironmentalGain, EnvironGainEval, EcoEffectPotential, EcoEffectPotentialEval, \
-  EcoInnovationStatus, EcoinnovationStatusEval
+from .models import *
 # Register your models here.
 
 class Ecocase2ESMInline(admin.TabularInline):
@@ -54,3 +51,7 @@ admin.site.register(EcoEffectPotential)
 admin.site.register(EcoEffectPotentialEval)
 admin.site.register(EcoInnovationStatus)
 admin.site.register(EcoinnovationStatusEval)
+admin.site.register(MassEffectPotential)
+admin.site.register(MassEffectPotentialEval)
+admin.site.register(ReboundPotential)
+admin.site.register(ReboundPotentialEval)

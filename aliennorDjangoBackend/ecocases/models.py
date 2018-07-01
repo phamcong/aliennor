@@ -219,6 +219,35 @@ class EnvironmentalGain(models.Model):
     def __str__(self):
         return self.level
 
+class MassEffectPotential(models.Model):
+    level = models.CharField(max_length=50, null=False, blank=False)
+    label = models.CharField(max_length=50, null=False, blank=False)
+    color = models.TextField(max_length=10, null=False, blank=False)
+    def __str__(self):
+        return self.level
+
+class MassEffectPotentialEval(models.Model):
+    ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    mass_effect_potential = models.ForeignKey(MassEffectPotential, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.ecocase.title + ' - ' + self.user.username + ' - ' + self.mass_effect_potential.level
+
+class ReboundPotential(models.Model):
+    level = models.CharField(max_length=50, null=False, blank=False)
+    label = models.CharField(max_length=50, null=False, blank=False)
+    color = models.TextField(max_length=10, null=False, blank=False)
+    def __str__(self):
+        return self.level
+
+class ReboundPotentialEval(models.Model):
+    ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    rebound_potential = models.ForeignKey(ReboundPotential, on_delete=models.CASCADE, null=True)
+
+    def __str__(self):
+        return self.ecocase.title + ' - ' + self.user.username + ' - ' + self.rebound_potential.level
 
 class EnvironGainEval(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
@@ -229,6 +258,12 @@ class EnvironGainEval(models.Model):
     def __str__(self):
         return self.ecocase.title + ' - ' + self.user.username + ' - ' + self.environ_gain.level
 
+class EcocaseGeneralEval(models.Model):
+    ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False)
+    is_inspiring = models.NullBooleanField(null=True, default=False)
+    social_consequences_comment = tinymce_models.HTMLField(default='', null=True)
+    case_characterizations_comment = tinymce_models.HTMLField(default='', null=True)
 
 class EcoEffectPotential(models.Model):
     title = models.CharField(max_length=50, null=False, blank=False)
