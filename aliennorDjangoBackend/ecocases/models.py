@@ -58,6 +58,8 @@ class Ecocase(models.Model):
     evaluated_by_users = models.ManyToManyField(User, related_name='evaluated_by_users')
     evaluate_by_users = models.ManyToManyField(User, related_name='evaluate_by_users')
 
+    reference = models.CharField(max_length=300, null=True, blank=True)
+
     def __str__(self):
         return self.title
 

@@ -1,4 +1,6 @@
 from django.http import JsonResponse
+from rest_framework.response import Response
+from django.http import HttpResponse
 from django.db.models import Avg, Count, Func
 from django.shortcuts import render
 from django.views.generic.edit import FormView
@@ -15,7 +17,6 @@ from ..mixins import FormUserNeededMixin, UserOwnerMixin
 import json
 from ecocases.utils import get_token_data
 
-from django.http import JsonResponse
 from django.forms.models import model_to_dict
 from django.core import serializers
 
@@ -37,12 +38,22 @@ def get_esms(request):
     # for esm in list(all_esms):
     #     esms[esm.get('id')] = esm
 
-    return JsonResponse({
-        'status': 'success',
-        'data': {
-            'esms': esms_array
-        }
-    })
+    content = {'data': { 'esms': esms_array }}
+    response = HttpResponse(json.dumps(content))
+    response.__setitem__('Content-Type', 'application/json')
+    response.__setitem__('Access-Control-Expose-Headers', 'xsrf-token');
+    response.__setitem__('Access-Control-Allow-Origin', 'http://localhost:4200')
+    response.__setitem__('Access-Control-Allow-Credentials', 'true')
+    response.__setitem__('Access-Control-Allow-Headers', 'Content-Type, Authorization')
+
+    return response
+    # return JsonResponse({
+    #     'status': 'success',
+    #     'data': {
+    #         'esms': esms_array
+    #     },
+    #     'safe': False
+    # })
 
 def get_ecocases_by_esm(request, esm_id):
     esm = ESM.objects.get(id=esm_id)
