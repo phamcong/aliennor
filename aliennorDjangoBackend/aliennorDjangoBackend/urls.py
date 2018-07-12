@@ -37,5 +37,6 @@ urlpatterns = [
     url(r'^api/user/get-data/$', views.get_user_data, name='get user data'),
     url(r'^api/user/update/$', views.update_data, name='update user data'),
     url(r'^api/user/update-password/$', views.update_password, name='update user password'),
-    url(r'^api/user/delete/$', views.delete_account, name='delete user account')
+    url(r'^api/user/delete/$', views.delete_account, name='delete user account'),
+    url(r'^api/users/allocation-cas-users$', views.allocation_cas_users, name='allocation cas users')
 ]

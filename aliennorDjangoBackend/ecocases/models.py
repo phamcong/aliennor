@@ -249,7 +249,10 @@ class ReboundPotentialEval(models.Model):
     rebound_potential = models.ForeignKey(ReboundPotential, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return self.ecocase.title + ' - ' + self.user.username + ' - ' + self.rebound_potential.level
+        if self.rebound_potential != None:
+            return self.ecocase.title + ' - ' + self.user.username + ' - ' + self.rebound_potential.level
+        else:
+            return self.ecocase.title + ' - ' + self.user.username + ' - ' + 'Non evaluation'
 
 class EnvironGainEval(models.Model):
     ecocase = models.ForeignKey(Ecocase, on_delete=models.CASCADE, null=False)
